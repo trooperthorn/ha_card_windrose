@@ -1,3 +1,13 @@
+### v2.9.0
+
+Fork release (trooperthorn/ha_card_windrose).
+
+Feature:
+- `sun_position` config: draws a marker on the rose's rim at an entity's azimuth (defaults to `sun.sun`), rotating with the rose the same way the current-direction arrow does. Fixes the sun half of #90
+
+Other:
+- Reviewed every remaining open upstream issue for feasibility. #171 needs no code (already covered by the existing `rose_config.background_image`, the maintainer's own suggested answer on that ticket). #46 (forecast data) and #166's hover cross-highlighting are verified feasible but deferred pending their own scoped passes. See `docs/backlog.md` and `docs/decisions.md` for the full reasoning on every open issue, including why several are intentionally not built.
+
 ### v2.8.0
 
 Fork release (trooperthorn/ha_card_windrose), based on upstream v2.7.0.
