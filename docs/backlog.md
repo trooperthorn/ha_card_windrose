@@ -3,13 +3,26 @@
 This fork tracks `aukedejong/lovelace-windrose-card` as `upstream`. As of
 2026-09-08 the fork is at the same commit as upstream (`b1ef471`, tag
 `v2.7.0`), zero commits ahead or behind. This document triages the 23 issues
-open on the upstream tracker at that date so a future pass can pick items
-without re-reading every issue. Nothing in this list has been implemented
-yet; this is triage only, done at Sean's request (2026-09-08) to avoid
-committing to 20+ undesigned features in one pass.
+open on the upstream tracker at that date.
 
 House rule: never open issues, pull requests, or comments on the upstream
 repository. Work here happens only in this fork.
+
+## Phase status (2026-09-08)
+
+| Phase | Covers | Status |
+| --- | --- | --- |
+| 0 | Investigation: #193 thread, #127 workaround check, moon-entity check, #166 split | Done |
+| 1 | #201 (card_height/content_align), #51 (docs) | Done |
+| 2 | #207, #165, #211 (corner_info), #125 (already covered, no code) | Done |
+| 3 | #226 (real bug found, fixed), #225, #108, #127 (documented instead) | Done |
+| 4 | Folded into phase 3 (#225) | Done |
+| 5 | #193 (wind speed bar) | Not started: needs the full thread read (done in phase 0) plus a UX decision upstream itself hasn't settled on; not attempting a novel design here. |
+| 6 | #171 (named arcs), #90 sun half | Not started |
+| 7 | Units-decoupling refactor | Not building. Checked against Sean's real dashboards (`~/workspace/ha-dashboards`): no non-wind use of this card exists, and its only justification (#160, #180) is rejected below. |
+| 8 | #180 (lightning), #46 (forecast), #160 (non-wind data) | Not building, see the table below. |
+| 9 | #156 (heatmap), #91 (timeline), #80 (compass), #90 moon half | Not building, see the table below. |
+| ongoing | #117 (iOS scroll bug) | Blocked: no iOS device to reproduce against. |
 
 Columns: **Effort** is a rough size for implementing in this fork
 (S = config/rendering tweak, M = new rendering path or config surface,
@@ -42,18 +55,27 @@ depends on behavior nobody has been able to pin down.
 | [108](https://github.com/aukedejong/lovelace-windrose-card/issues/108) | Separate time window for the averaging used by dynamic speed-range colors vs. the rose's own period | M | Done: `average_period_back` on a `windspeed_entities` item (requires `dynamic_speed_ranges`). Fetches that entity's own raw average over an independent window, in parallel with the normal display-period fetch; falls back to the existing average-of-the-display-period behavior when unset. See docs/decisions.md. |
 | [125](https://github.com/aukedejong/lovelace-windrose-card/issues/125) | Additional info block above/below the rose (mirrors `corner_info` structure) | - | Already supported, no code change needed: `text_blocks.top` / `text_blocks.bottom` render an HTML block above/below the rose with `${...}` template placeholders, including `${min-speed}`, `${max-speed}`, `${average-speed}`, `${wind-description}` (a computed natural-language summary), and any `${entity.attribute}` or `${entity}` reference. Confirmed by reading `src/textblocks/TemplateParser.ts`. The requester filed this before checking, or before `text_blocks` existed; no upstream response on the ticket. Nothing to build. |
 | [46](https://github.com/aukedejong/lovelace-windrose-card/issues/46) | Plot `weather.*` forecast data (future), not just historical statistics | M/L | Different data source entirely (forecast service call vs. statistics API), so this is closer to a parallel data pipeline than a tweak to the existing one. |
-| [90](https://github.com/aukedejong/lovelace-windrose-card/issues/90) | Overlay sun/moon position on the rose | M | Home Assistant already exposes `sun.sun` with azimuth/elevation attributes; feasible as an optional overlay layer using the existing angular-plot machinery. Moon tracking would need an external ephemeris source since core has no moon-position entity (unverified whether one exists in the current core tree; check before promising it). |
+| [90](https://github.com/aukedejong/lovelace-windrose-card/issues/90) (sun half) | Overlay sun position on the rose | M | Home Assistant exposes `sun.sun` with azimuth/elevation attributes; feasible as an optional overlay layer using the existing angular-plot machinery. The moon half of this request is not being built, see the new-visualization table below. |
 | [171](https://github.com/aukedejong/lovelace-windrose-card/issues/171) | Named directional arcs (e.g. paragliding launch-site headings) | M | Requester already published a rough working hack in the issue thread. Real feature: an array of labeled angular ranges drawn as arcs/bands on the rose. |
 | [156](https://github.com/aukedejong/lovelace-windrose-card/issues/156) | Heatmap mode for direction/speed | M/L | Different visualization mode from the current rose; needs its own rendering path, not a variant of the existing one. |
 
-## New card / alternate visualization (large, likely out of scope for this fork)
+## New card / alternate visualization (checked against Sean's actual dashboards, 2026-09-08: not building these)
 
-| # | Title | Effort | Notes |
+Checked `~/workspace/ha-dashboards` (Overview, Mobile, and the shared
+`weather_station.yaml`) for real evidence these are wanted, per Sean's
+request to verify against his dashboards before applying Phase 7/9. None
+are: two are things he tried and explicitly rejected, one has no entity
+to back it, and none appear anywhere in his config. Full reasoning in
+[decisions.md](decisions.md).
+
+| # | Title | Effort | Status |
 | --- | --- | --- | --- |
-| [160](https://github.com/aukedejong/lovelace-windrose-card/issues/160) | Repurpose the rose for non-wind data (air quality, etc.) | L | Would mean decoupling the renderer from wind-specific units and labels throughout. Large refactor for a use case this fork does not need. |
-| [91](https://github.com/aukedejong/lovelace-windrose-card/issues/91) | New card: direction-over-time line/timeline graph | L | Explicitly a different chart type ("new card request" label), not a windrose variant. |
-| [80](https://github.com/aukedejong/lovelace-windrose-card/issues/80) | New card: standalone rotating compass/heading indicator | L | Also filed as "new card request." Shares some math (angle-to-screen projection) with the rose but is a different UI. |
-| [180](https://github.com/aukedejong/lovelace-windrose-card/issues/180) | Lightning strikes (azimuth + distance) plotted like wind data | L | Reporter is already "abusing" the existing wind-speed axis to encode distance, i.e. no native support. A clean implementation needs a distance axis separate from the speed-range axis, which touches the same units-coupling problem as #160. |
+| [180](https://github.com/aukedejong/lovelace-windrose-card/issues/180) | Lightning strikes (azimuth + distance) plotted like wind data | L | Not building. Sean has real Blitzortung sensors, but his own `docs/card_recommendations.md` already solved this by enabling `show_lightning` on the `weather-radar-card` already in his tree, reasoned as a richer signal than a windrose-shaped plot would give. |
+| [80](https://github.com/aukedejong/lovelace-windrose-card/issues/80) | New card: standalone rotating compass/heading indicator | L | Not building. `custom:compass-card` was previously in Sean's dashboard and was removed; `card_recommendations.md` states it "duplicate[s] the windrose card." This issue is that exact idea. |
+| [160](https://github.com/aukedejong/lovelace-windrose-card/issues/160) | Repurpose the rose for non-wind data (air quality, etc.) | L | Not building. No non-wind usage anywhere in Sean's dashboards; the units-decoupling refactor this needs (Phase 7) has no other consumer either now that #180 is out. |
+| [90](https://github.com/aukedejong/lovelace-windrose-card/issues/90) (moon half) | Overlay moon position on the rose | - | Not building. Sean already shows moon phase/moonrise/moonset via a dedicated astro card. Core also has no moon azimuth/elevation entity to plot (only a phase enum, confirmed against `ha-core-reference`), so there is nothing to feed this even if wanted. Sun overlay is unaffected, see Phase 6. |
+| [91](https://github.com/aukedejong/lovelace-windrose-card/issues/91) | New card: direction-over-time line/timeline graph | L | Not building. No evidence of need; a different chart type ("new card request" label), not a windrose variant. |
+| [156](https://github.com/aukedejong/lovelace-windrose-card/issues/156) | Heatmap mode for direction/speed | M/L | Not building. No evidence of need anywhere in Sean's dashboards. |
 
 ## Interaction / UX ideas (unscoped)
 

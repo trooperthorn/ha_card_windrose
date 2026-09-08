@@ -147,3 +147,49 @@ already in wide HACS use) achieves the same result today with zero native
 code, by templating the whole card config with Jinja before windrose-card
 ever sees it. Given a proven, general workaround already exists, native
 support was left undone rather than half-built.
+
+## 2026-09-08: Phase 7 (units-decoupling refactor) and Phase 9 (new visualization cards) not built, checked against Sean's real dashboards
+
+Before starting these two phases, checked `~/workspace/ha-dashboards`
+(Overview, Mobile, and the shared `weather_station.yaml`, plus
+`docs/card_recommendations.md` and `docs/installed_inventory.md`) for
+evidence they solve a real problem, per Sean's request to verify against his
+dashboards before applying. They do not:
+
+- **#180 (lightning as azimuth+distance)**: Sean has real Blitzortung
+  sensors (`geo_location.lightning_strike_*`, distance/count/energy). His
+  own dashboard work already addressed this: `docs/card_recommendations.md`
+  recommends (and the live config uses) `show_lightning` /
+  `lightning_max_age_minutes` on the `weather-radar-card` already installed,
+  explicitly reasoned there as richer than a text/glance display would be.
+  That is a considered, working answer to the same need #180 describes,
+  built on a card meant for spatial overlays rather than windrose-card's
+  circular one-axis-per-corner layout.
+- **#80 (standalone compass card)**: `custom:compass-card` was previously in
+  Sean's Mobile Climate view and was removed. `card_recommendations.md`
+  states plainly it "duplicate[s] the windrose card." #80 asks for exactly
+  that card.
+- **#90's moon half**: Sean already shows moon phase, moonrise, and moonset
+  through a dedicated astro card, not windrose-card. Home Assistant's `moon`
+  integration also has no azimuth/elevation to plot (only a phase enum,
+  confirmed by reading `homeassistant/components/moon/sensor.py` in
+  `ha-core-reference`), so there would be nothing to feed an overlay even if
+  one were wanted. The sun half of #90 is unaffected by this and stays in
+  Phase 6.
+- **#160 (non-wind data) and #91/#156 (timeline, heatmap)**: no reference to
+  any of these anywhere in Sean's dashboards. The only windrose-card usage
+  across all three dashboard files is the one real Davis Vantage weather
+  station, showing actual wind data.
+
+Since #180 and #160 were the refactor's only justification, and both are
+answered by evidence rather than by design preference, Phase 7 does not get
+built either: it would be infrastructure for consumers that do not exist,
+carrying real risk against the one live, working card
+(`weather_station.yaml`'s `card_mod` block selects the card's SVG output
+directly with generic selectors -- `circle + text`, `g > text, rect + text`,
+`svg { overflow: visible; }` -- so a broad renderer refactor is exactly the
+kind of change that could quietly break it for no benefit).
+
+This is recorded as a decision, not a silent skip: the backlog documents the
+issues as "not building" with this reasoning rather than leaving them
+unaddressed with no explanation.
