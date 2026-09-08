@@ -83,13 +83,16 @@ export class ConfigCheckUtils {
         throw new Error(`statistics_period ${statsType} is invalid, should be one of min, mean or max`);
     }
 
-    public static checkDateString(date: string): boolean {
-        // const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
-        //
-        // if (!isoRegex.test(date)) {
-        //     return false;
-        // }
+    // Only the extended ISO 8601 forms below are guaranteed to parse the same
+    // way in every browser; anything else (e.g. a missing "T" separator) is
+    // implementation-defined and can parse leniently in one engine and fail
+    // in another, so it is rejected here rather than left to `new Date()`.
+    private static readonly isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/;
 
+    public static checkDateString(date: string): boolean {
+        if (!this.isoDateRegex.test(date)) {
+            return false;
+        }
         const parsedDate = new Date(date);
         return !isNaN(parsedDate.getTime());
     }

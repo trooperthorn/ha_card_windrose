@@ -57,3 +57,35 @@ readers can tell a pre-existing issue from a regression.
   `src/matcher/strategy/FullTimeMatcher.test.ts`. Unrelated to any phase in
   the backlog; not investigated further here.
 - `npm run typecheck` passes clean.
+
+## 2026-09-08: #226 ("data_period from_date/to_date not possible") is not a missing feature
+
+`from_date` / `to_date` (a fixed absolute date range for `data_period`) were
+already released in v2.6.0 (2026-08-23, `git log -1 --format=%cd -- src/config/buttons/Period.ts`)
+and are documented in the README's `data_period` table. The upstream issue
+was filed 2026-08-31, after that release, so the feature existed when it was
+reported.
+
+The reporter's config used `from_date: "2026-01-01Z00:00:00"` — missing the
+`T` date/time separator required by ISO 8601 (`Z` sits where `T` belongs).
+[`ConfigCheckUtils.checkDateString`](../src/config/ConfigCheckUtils.ts)
+validated this by handing the raw string to the browser's native `new
+Date(string)` and checking for `NaN`. That parsing is only standardized for
+conformant ISO 8601 strings; for a malformed string like this one it is
+implementation-defined, confirmed with `node -e "new Date('2026-01-01Z00:00:00').getTime()"`,
+which returns a valid (wrong) timestamp in V8 rather than `NaN` -- other
+engines are free to reject the same string, which would explain a report
+that varies by browser and is hard for the upstream maintainer to reproduce
+from a single test.
+
+Fix: `checkDateString` now validates against an explicit ISO 8601 regex
+(date-only, or date+`T`+time with optional fractional seconds and an
+optional `Z`/offset) before falling back to `new Date()` for the actual
+parse, so a malformed string like the reporter's is rejected consistently
+with a clear `from_date not in correct ISO format` error instead of parsing
+inconsistently per engine. The regex existed already, commented out in the
+source with no explanation for why; re-enabling it (broadened slightly to
+also accept a bare date, which the README already documents as valid) closes
+the gap without narrowing what already worked.
+
+No new config surface was added; this is a validation-correctness fix.
