@@ -1,3 +1,5 @@
+import {CardConfigCornerValueColor} from "./CardConfigCornerValueColor";
+
 export interface CardConfigCornerInfo {
     entity: string;
     attribute: string;
@@ -10,4 +12,7 @@ export interface CardConfigCornerInfo {
     output_unit: string;
     precision: number;
     direction_letters: string;
+    unknown_value: string;
+    hide_when_unknown: boolean;
+    value_colors: CardConfigCornerValueColor[];
 }

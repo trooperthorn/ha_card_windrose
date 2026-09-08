@@ -2,6 +2,7 @@ import {CornerInfo} from "./CornerInfo";
 import {CardConfigCorners} from "../card/CardConfigCorners";
 import {CardConfigCornerInfo} from "../card/CardConfigCornerInfo";
 import {ConfigCheckUtils} from "./ConfigCheckUtils";
+import {CornerValueColorRange} from "./CornerValueColorRange";
 
 export class CornersInfo {
 
@@ -69,10 +70,24 @@ export class CornersInfo {
         info.unit = cornerInfoConfig.unit;
         info.precision = ConfigCheckUtils.checkNumberOrUndefined('precision', cornerInfoConfig.precision);
         info.directionLetters = this.checkDirectionLetters(cornerInfoConfig.direction_letters);
+        info.unknownValue = ConfigCheckUtils.checkString(cornerInfoConfig.unknown_value);
+        info.hideWhenUnknown = ConfigCheckUtils.checkBooleanDefaultFalse(cornerInfoConfig.hide_when_unknown);
+        info.valueColors = this.checkValueColors(cornerInfoConfig.value_colors);
         if (info.entity || info.label) {
             info.show = true;
         }
         return info;
+    }
+
+    private static checkValueColors(valueColors: {from_value: number, color: string}[] | undefined): CornerValueColorRange[] | undefined {
+        if (valueColors === undefined || valueColors === null || valueColors.length === 0) {
+            return undefined;
+        }
+        return valueColors
+            .map(range => new CornerValueColorRange(
+                ConfigCheckUtils.checkNumber('value_colors.from_value', range.from_value),
+                ConfigCheckUtils.checkStringOrDefault(range.color, 'var(--primary-text-color)')))
+            .sort((a, b) => a.fromValue - b.fromValue);
     }
 
     private static checkUnit(unit: string | undefined) {

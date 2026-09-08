@@ -632,6 +632,29 @@ Configuration for displaying information in the corners around the windrose.
 | output_unit       | string |                      |          | Output unit                                                                                                                   |
 | precision         | string |                      |          | Overwrites (if available) the precision of the entity. For rounding the value, for example after converting to an other unit. |
 | direction_letters | string |         NESW         |          | The cardinal direction letters used for winddirection conversion. When using 4 letters, the x directions will not be used.    |
+| unknown_value     | string |                      |          | Text to show instead of the entity's raw state when that state is `unknown` or `unavailable` (for example `N/A`).             |
+| hide_when_unknown | boolean |        false        |          | Hides this corner's value entirely when the entity's state is `unknown` or `unavailable`, instead of showing it.               |
+| value_colors      | list   |                      |          | Colors the value by the ranges in this list, same shape as [speed_ranges](#Object-speed_ranges): a list of `{from_value, color}`, sorted ascending, each range applying from its `from_value` up to the next range's. Ignored for non-numeric values.|
+
+Note: `label` is optional. When it is left out, the value is drawn where the
+label would otherwise sit, instead of leaving an empty gap above it.
+
+### Example value_colors yaml
+```yaml
+corner_info:
+  top_left:
+    label: Gust speed
+    entity: sensor.gorredijk_wind_gust
+    value_colors:
+      - from_value: 0
+        color: rgb(0,255,0)
+      - from_value: 10
+        color: yellow
+      - from_value: 20
+        color: orange
+      - from_value: 30
+        color: red
+```
 
 ### Corner Info unit conversion
 

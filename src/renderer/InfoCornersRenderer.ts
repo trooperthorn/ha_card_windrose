@@ -9,6 +9,8 @@ import {WindDirectionLettersConverter} from "../converter/WindDirectionLettersCo
 import {CornersInfo} from "../config/CornersInfo";
 import {DimensionCalculator} from "../dimensions/DimensionCalculator";
 
+const UNKNOWN_STATES = ['unknown', 'unavailable'];
+
 export class InfoCornersRenderer {
 
     private readonly dimensionCalculator: DimensionCalculator;
@@ -102,43 +104,78 @@ export class InfoCornersRenderer {
         this.rightTopValue?.remove();
         this.leftBottomValue?.remove();
         this.rightBottomValue?.remove();
-        if (this.leftTopConfig.show && entityStates[0].active) {
-            this.leftTopValue = this.svgUtil.drawText(this.leftTopCoor,
+        if (this.leftTopConfig.show && entityStates[0].active && !this.isHidden(entityStates[0], this.leftTopConfig)) {
+            const coor = this.leftTopConfig.label ? this.leftTopCoor : this.dimensionCalculator.infoCornerLabelLeftTop();
+            this.leftTopValue = this.svgUtil.drawText(coor,
                 this.getText(entityStates[0], this.leftTopConfig, this.leftTopConverter),
-                TextAttributes.infoCornerAttribute(this.leftTopConfig.color, this.leftTopConfig.valueTextSize));
+                TextAttributes.infoCornerAttribute(this.resolveColor(entityStates[0], this.leftTopConfig, this.leftTopConverter), this.leftTopConfig.valueTextSize));
             this.leftTopValue.attr({"text-anchor": "left", "dominant-baseline": "hanging"});
             this.leftTopValue.addClass("corner-value-left-top");
             this.leftTopValue.back();
         }
-        if (this.rightTopConfig.show && entityStates[1].active) {
-            this.rightTopValue = this.svgUtil.drawText(this.rightTopCoor,
+        if (this.rightTopConfig.show && entityStates[1].active && !this.isHidden(entityStates[1], this.rightTopConfig)) {
+            const coor = this.rightTopConfig.label ? this.rightTopCoor : this.dimensionCalculator.infoCornerLabelRightTop();
+            this.rightTopValue = this.svgUtil.drawText(coor,
                 this.getText(entityStates[1], this.rightTopConfig, this.rightTopConverter),
-                TextAttributes.infoCornerAttribute(this.rightTopConfig.color, this.rightTopConfig.valueTextSize));
+                TextAttributes.infoCornerAttribute(this.resolveColor(entityStates[1], this.rightTopConfig, this.rightTopConverter), this.rightTopConfig.valueTextSize));
             this.rightTopValue.attr({"text-anchor": "end", "dominant-baseline": "hanging"});
             this.rightTopValue.addClass("corner-value-right-top");
             this.rightTopValue.back();
         }
-        if (this.leftBottomConfig.show && entityStates[2].active) {
-            this.leftBottomValue = this.svgUtil.drawText(this.leftBottomCoor,
+        if (this.leftBottomConfig.show && entityStates[2].active && !this.isHidden(entityStates[2], this.leftBottomConfig)) {
+            const coor = this.leftBottomConfig.label ? this.leftBottomCoor : this.dimensionCalculator.infoCornetLabelLeftBottom();
+            this.leftBottomValue = this.svgUtil.drawText(coor,
                 this.getText(entityStates[2], this.leftBottomConfig, this.leftBottomConverter),
-                TextAttributes.infoCornerAttribute(this.leftBottomConfig.color, this.leftBottomConfig.valueTextSize));
+                TextAttributes.infoCornerAttribute(this.resolveColor(entityStates[2], this.leftBottomConfig, this.leftBottomConverter), this.leftBottomConfig.valueTextSize));
             this.leftBottomValue.attr({"text-anchor": "left", "dominant-baseline": "auto"});
             this.leftBottomValue.addClass("corner-value-left-bottom");
             this.leftBottomValue.back();
         }
-        if (this.rightBottomConfig.show && entityStates[3].active) {
-            this.rightBottomValue = this.svgUtil.drawText(this.rightBottomCoor,
+        if (this.rightBottomConfig.show && entityStates[3].active && !this.isHidden(entityStates[3], this.rightBottomConfig)) {
+            const coor = this.rightBottomConfig.label ? this.rightBottomCoor : this.dimensionCalculator.infoCornetLabelRightBottom();
+            this.rightBottomValue = this.svgUtil.drawText(coor,
                 this.getText(entityStates[3], this.rightBottomConfig, this.rightBottomConverter),
-                TextAttributes.infoCornerAttribute(this.rightBottomConfig.color, this.rightBottomConfig.valueTextSize));
+                TextAttributes.infoCornerAttribute(this.resolveColor(entityStates[3], this.rightBottomConfig, this.rightBottomConverter), this.rightBottomConfig.valueTextSize));
             this.rightBottomValue.attr({"text-anchor": "end", "dominant-baseline": "auto"});
             this.rightBottomValue.addClass("corner-value-right-bottom");
             this.rightBottomValue.back();
         }
     }
 
+    private isHidden(entityState: EntityState, config: CornerInfo): boolean {
+        return config.hideWhenUnknown && this.isUnknown(entityState);
+    }
+
+    private isUnknown(entityState: EntityState): boolean {
+        return entityState !== undefined && entityState !== null
+            && UNKNOWN_STATES.includes((entityState.state ?? '').toLowerCase());
+    }
+
+    private resolveColor(entityState: EntityState, config: CornerInfo, converter: (input: any) => any): string {
+        if (!config.valueColors || config.valueColors.length === 0
+            || entityState === undefined || entityState === null || this.isUnknown(entityState)) {
+            return config.color;
+        }
+        const numericValue = +converter(entityState.state);
+        if (isNaN(numericValue)) {
+            return config.color;
+        }
+        const ranges = config.valueColors;
+        let matched = ranges[0];
+        for (const range of ranges) {
+            if (numericValue >= range.fromValue) {
+                matched = range;
+            }
+        }
+        return matched.color;
+    }
+
     private getText(entityState: EntityState, config: CornerInfo, converter: (input: any) => any): string {
         if (entityState === undefined || entityState === null) {
             return "";
+        }
+        if (this.isUnknown(entityState) && config.unknownValue) {
+            return config.unknownValue;
         }
         let stateValue = converter(entityState.state);
         if (!isNaN(stateValue!) && !isNaN(config.precision!)) {

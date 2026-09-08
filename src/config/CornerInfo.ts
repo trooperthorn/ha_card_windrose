@@ -1,3 +1,5 @@
+import {CornerValueColorRange} from "./CornerValueColorRange";
+
 export class CornerInfo {
     show: boolean = false;
     entity: string | undefined;
@@ -11,4 +13,7 @@ export class CornerInfo {
     inputUnit: string | undefined;
     outputUnit: string | undefined;
     directionLetters: string | undefined;
+    unknownValue: string | undefined;
+    hideWhenUnknown: boolean = false;
+    valueColors: CornerValueColorRange[] | undefined;
 }
