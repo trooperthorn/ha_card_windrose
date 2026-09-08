@@ -4,6 +4,8 @@
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/aukedejonga)
 
+This is a fork of aukedejong/lovelace-windrose-card; fork-specific notes live in [docs/README.md](docs/README.md).
+
 A Home Assistant Lovelace custom card to show wind speed and direction data in a Windrose diagram.
 
 It's developed for wind data, but it's not limited to wind data only. It is also used for solar winds and lightning data.
@@ -81,6 +83,8 @@ Select "Manage Resources"
 | buttons_config            |    [object](#Object-buttons_config)     |         |    -     | Button related configuration.                                                                                                                                                                                          |
 | windspeed_bar_location    |                 string                  | bottom  |    -     | Location of the speed bar graph: `bottom`, `right`                                                                                                                                                                     |
 | card_width (EXPERIMENTAL) |                 number                  |    4    |    -     | Defines the width of the card in sections layout. Default is 4, max is 16 (I think), full width.                                                                                                                       |
+| card_height               |                 number                  | (auto)  |    -     | Fixed height of the card in pixels. When not set, the card keeps its own aspect ratio and grows or shrinks to fit the rose.                                                                                            |
+| content_align             |                 string                  |   top   |    -     | Where the card content sits when `card_height` leaves extra space: `top`, `center`, `bottom`. Ignored when `card_height` is not set.                                                                                   |
 | hide_windspeed_bar        |                 boolean                 |  false  |    -     | Hides all windspeed bars.                                                                                                                                                                                              |
 | direction_labels          |   [object](#Object-direction_labels)    |         |    -     | Windrose cardinal direction label configuration. Cardinal_direction_letters configuration is moved into this plus added features. Of this property is defined, the above cardinal_direction_letters config is ignored. |
 | compass_direction         |   [object](#Object-compass_direction)   |         |    -     | Configuration for using a compass sensor to rotate the windrose to the correct direction, for use on for example a boat.                                                                                               |

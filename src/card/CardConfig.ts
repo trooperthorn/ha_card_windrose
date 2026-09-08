@@ -29,6 +29,8 @@ export interface CardConfig {
     windspeed_bar_location: string;
     hide_windspeed_bar: boolean;
     card_width: number;
+    card_height: number;
+    content_align: string;
     direction_labels: CardConfigDirectionLabels;
     matching_strategy: CardConfigMatchingStrategy;
 

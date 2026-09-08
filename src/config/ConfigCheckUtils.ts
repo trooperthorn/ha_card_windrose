@@ -94,6 +94,15 @@ export class ConfigCheckUtils {
         return !isNaN(parsedDate.getTime());
     }
 
+    public static checkContentAlign(align: string | undefined | null): string {
+        if (align === undefined || align === null) {
+            return 'top';
+        } else if (align === 'top' || align === 'center' || align === 'bottom') {
+            return align;
+        }
+        throw new Error(`content_align ${align} is invalid, should be one of top, center, bottom`);
+    }
+
     public static checkHasProperty(obj: unknown, property: string): boolean {
         return typeof obj === "object" &&
             obj !== null &&

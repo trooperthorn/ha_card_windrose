@@ -128,7 +128,7 @@ export class WindRoseCard extends LitElement {
         this.log.method('render');
         return html`
             <ha-card header="${this.cardConfig?.title}">
-                <div class="card-content">
+                <div class="card-content" style="${this.cardContentStyle()}">
                     <div id="error-container">${this.errorMessage}</div>
                     ${this.renderButtons(this.cardConfig.buttonsConfig, 'top')}
                     ${this.renderTextBlock(this.cardConfig.textBlocks.top, 'top')}
@@ -140,6 +140,14 @@ export class WindRoseCard extends LitElement {
                 </div>
             </ha-card>
         `;
+    }
+
+    cardContentStyle(): string {
+        if (!this.cardConfig.cardHeight) {
+            return '';
+        }
+        const justifyContent = { top: 'flex-start', center: 'center', bottom: 'flex-end' }[this.cardConfig.contentAlign];
+        return `height: ${this.cardConfig.cardHeight}px; display: flex; flex-direction: column; justify-content: ${justifyContent};`;
     }
 
     renderButtons(buttonsConfig: ButtonsConfig | undefined, location: string): TemplateResult {

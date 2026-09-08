@@ -38,6 +38,8 @@ export class CardConfigWrapper {
     textBlocks: TextBlocks;
     actions: CardConfigActions | undefined;
     cardWidth: number;
+    cardHeight: number | undefined;
+    contentAlign: string;
     disableAnimations: boolean;
     logLevel: string;
 
@@ -145,6 +147,8 @@ export class CardConfigWrapper {
         this.matchingStrategy = MatchingStrategy.fromConfig(cardConfig.matching_strategy);
         this.filterEntitiesQueryParameter = this.createEntitiesQueryParameter();
         this.cardWidth = !cardConfig.card_width ? 4 : cardConfig.card_width;
+        this.cardHeight = ConfigCheckUtils.checkNumberOrUndefined('card_height', cardConfig.card_height);
+        this.contentAlign = ConfigCheckUtils.checkContentAlign(cardConfig.content_align);
         this.cardColor = CardColors.fromConfig(cardConfig.colors);
         this.compassConfig = CompassConfig.fromConfig(cardConfig.compass_direction);
         this.cornersInfo = CornersInfo.create(cardConfig.corner_info);
