@@ -15,6 +15,7 @@ import {ButtonsConfig} from "./buttons/ButtonsConfig";
 import {MatchingStrategy} from "./MatchingStrategy";
 import {Period} from "./buttons/Period";
 import {RoseConfig} from "./RoseConfig";
+import {SunPositionConfig} from "./SunPositionConfig";
 
 
 export class CardConfigWrapper {
@@ -34,6 +35,7 @@ export class CardConfigWrapper {
     matchingStrategy: MatchingStrategy;
     cardColor: CardColors;
     compassConfig: CompassConfig;
+    sunPosition: SunPositionConfig;
     cornersInfo: CornersInfo;
     textBlocks: TextBlocks;
     actions: CardConfigActions | undefined;
@@ -151,6 +153,7 @@ export class CardConfigWrapper {
         this.contentAlign = ConfigCheckUtils.checkContentAlign(cardConfig.content_align);
         this.cardColor = CardColors.fromConfig(cardConfig.colors);
         this.compassConfig = CompassConfig.fromConfig(cardConfig.compass_direction);
+        this.sunPosition = SunPositionConfig.fromConfig(cardConfig.sun_position);
         this.cornersInfo = CornersInfo.create(cardConfig.corner_info);
         this.textBlocks = TextBlocks.fromConfig(cardConfig.text_blocks);
         this.logLevel = Log.checkLogLevel(this.cardConfig.log_level);

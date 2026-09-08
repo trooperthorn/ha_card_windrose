@@ -19,6 +19,7 @@ export class EntityStatesProcessor {
     private windDirectionState!: EntityState;
     private windSpeedStates: EntityState[] = [];
     private compassDirectionState!: EntityState;
+    private sunPositionState!: EntityState;
     private cornerTopLeftState!: EntityState;
     private cornerTopRightState!: EntityState;
     private cornerBottomLeftState!: EntityState;
@@ -45,6 +46,9 @@ export class EntityStatesProcessor {
         this.compassDirectionState = new EntityState(this.cardConfig.compassConfig.autoRotate,
             this.cardConfig.compassConfig.entity, this.cardConfig.compassConfig.attribute);
 
+        this.sunPositionState = new EntityState(this.cardConfig.sunPosition.show,
+            this.cardConfig.sunPosition.entity, this.cardConfig.sunPosition.attribute);
+
         const cornerInfo = this.cardConfig.cornersInfo;
         this.cornerTopLeftState = new EntityState(cornerInfo.topLeftInfo.show, cornerInfo.topLeftInfo.entity, cornerInfo.topLeftInfo.attribute);
         this.cornerTopRightState = new EntityState(cornerInfo.topRightInfo.show, cornerInfo.topRightInfo.entity, cornerInfo.topRightInfo.attribute);
@@ -57,7 +61,7 @@ export class EntityStatesProcessor {
         this.textBlockStates = entitiesTop.concat(entitiesBottom).concat(entitiesCenterCircle);
 
         this.cornerInfoStates = [this.cornerTopLeftState, this.cornerTopRightState, this.cornerBottomLeftState, this.cornerBottomRightState];
-        this.entityStates = [this.windDirectionState, this.compassDirectionState].concat(this.windSpeedStates).concat(this.cornerInfoStates).concat(this.textBlockStates);
+        this.entityStates = [this.windDirectionState, this.compassDirectionState, this.sunPositionState].concat(this.windSpeedStates).concat(this.cornerInfoStates).concat(this.textBlockStates);
         this.initReady = true;
     }
 
@@ -139,6 +143,18 @@ export class EntityStatesProcessor {
         }
         this.compassDirectionState.updated = false;
         return +this.compassDirectionState.state;
+    }
+
+    hasSunPositionUpdate(): boolean {
+        return this.sunPositionState.updated;
+    }
+
+    getSunPosition(): number | undefined {
+        if (this.sunPositionState.state === undefined) {
+            return undefined;
+        }
+        this.sunPositionState.updated = false;
+        return +this.sunPositionState.state;
     }
 
     hasCornerInfoUpdates(): boolean {

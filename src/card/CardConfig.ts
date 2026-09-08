@@ -11,6 +11,7 @@ import {CardConfigTextBlocks} from "./CardConfigTextBlocks";
 import {CardConfigButtonsConfig} from "./CardConfigButtonsConfig";
 import {CardConfigMatchingStrategy} from "./CardConfigMatchingStrategy";
 import {CardConfigRose} from "./CardConfigRose";
+import {CardConfigSunPosition} from "./CardConfigSunPosition";
 
 export interface CardConfig {
     type: string;
@@ -26,6 +27,7 @@ export interface CardConfig {
     rose_config: CardConfigRose;
     compass_direction: CardConfigCompass;
     current_direction: CardConfigCurrentDirection;
+    sun_position: CardConfigSunPosition;
     windspeed_bar_location: string;
     hide_windspeed_bar: boolean;
     card_width: number;

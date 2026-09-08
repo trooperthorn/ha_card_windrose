@@ -7,6 +7,8 @@ export class DegreesCalculator {
     private windSpeed: number | undefined;
     private roseRenderDegrees = 0;
     private windDirectionRenderDegrees: number | undefined;
+    private sunDegrees: number | undefined;
+    private sunRenderDegrees: number | undefined;
 
     constructor(private readonly northOffset: number,
                 private readonly autoRotate: boolean,
@@ -33,6 +35,13 @@ export class DegreesCalculator {
                     this.windDirectionRenderDegrees = this.northOffset + this.compassDegrees + this.windDirectionDegrees;
                 }
             }
+            if (this.sunDegrees === undefined) {
+                this.sunRenderDegrees = undefined;
+            } else if (this.asHeading) {
+                this.sunRenderDegrees = this.northOffset + (360 - this.compassDegrees) + this.sunDegrees;
+            } else {
+                this.sunRenderDegrees = this.northOffset + this.compassDegrees + this.sunDegrees;
+            }
 
         } else {
 
@@ -42,6 +51,7 @@ export class DegreesCalculator {
             } else {
                 this.windDirectionRenderDegrees = this.northOffset + this.windDirectionDegrees;
             }
+            this.sunRenderDegrees = this.sunDegrees === undefined ? undefined : this.northOffset + this.sunDegrees;
 
         }
         if (this.hideDirectionBelowSpeed !== undefined && (this.windSpeed === undefined || this.windSpeed <= this.hideDirectionBelowSpeed)) {
@@ -73,6 +83,15 @@ export class DegreesCalculator {
 
     setCompassDegrees(degrees: number) {
         this.compassDegrees = degrees;
+        this.updateRenderDegrees();
+    }
+
+    getSunRenderDegrees(): number | undefined {
+        return this.sunRenderDegrees;
+    }
+
+    setSunDegrees(degrees: number | undefined) {
+        this.sunDegrees = degrees;
         this.updateRenderDegrees();
     }
 

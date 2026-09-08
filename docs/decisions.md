@@ -193,3 +193,29 @@ kind of change that could quietly break it for no benefit).
 This is recorded as a decision, not a silent skip: the backlog documents the
 issues as "not building" with this reasoning rather than leaving them
 unaddressed with no explanation.
+
+## 2026-09-08: Phase 6 -- #90 sun overlay built, #171 already covered by an existing feature
+
+`sun_position` adds an optional marker at the rose's rim, rotated to the
+value of an entity's azimuth attribute (`sun.sun`'s `azimuth` by default).
+It reuses the exact rotation mechanism `CurrentDirectionRenderer` already
+uses for the current-wind-direction arrow: an independently-drawn element,
+rotated via an SVG `transform` to a pre-computed angle that already bakes in
+`rose_config.windrose_draw_north_offset` and any `compass_direction.auto_rotate`
+rotation, computed by `DegreesCalculator` the same way `windDirectionRenderDegrees`
+already is. Reading the live entity value goes through `EntityStatesProcessor`,
+the same mechanism `corner_info`/`text_blocks`/`compass_direction` use, so
+`sun_position` picks up hass updates the same way those do.
+
+`#171` (named directional arcs, e.g. paragliding launch-site headings) turned
+out not to need new code. The upstream maintainer's own reply on the ticket
+suggests "a specific background image could add the information" -- and this
+card has supported `rose_config.background_image` since v1.25.0. A user can
+already draw named arcs into a static image and set it as the rose's
+background. A dynamic version (config-driven arcs with live labels and
+colors) would need a real SVG arc-drawing subsystem duplicated across both
+rose renderer variants (`WindRoseRendererStandaard` and
+`WindRoseRendererCenterCalm`), plus counter-rotation for the labels the same
+way `windDirectionTextGroup`'s children get counter-rotated in
+`rotateWindRose()`, for a single requester the maintainer already pointed at
+an existing answer. Not built; documented instead.

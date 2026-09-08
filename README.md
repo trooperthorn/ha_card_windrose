@@ -88,6 +88,7 @@ Select "Manage Resources"
 | hide_windspeed_bar        |                 boolean                 |  false  |    -     | Hides all windspeed bars.                                                                                                                                                                                              |
 | direction_labels          |   [object](#Object-direction_labels)    |         |    -     | Windrose cardinal direction label configuration. Cardinal_direction_letters configuration is moved into this plus added features. Of this property is defined, the above cardinal_direction_letters config is ignored. |
 | compass_direction         |   [object](#Object-compass_direction)   |         |    -     | Configuration for using a compass sensor to rotate the windrose to the correct direction, for use on for example a boat.                                                                                               |
+| sun_position              |    [object](#Object-sun_position)       |         |    -     | Shows a marker on the rose's rim at the sun's current azimuth. Only present when this object is configured.                                                                                                            |
 | current_direction         |   [object](#Object-current_direction)   |         |    -     | Shows the last reported wind direction with a red arrow on the wind rose.                                                                                                                                              |
 | corner_info               |      [object](#Object-corner_info)      |         |    -     | Configuration for displaying entity states in the corners around the windrose.                                                                                                                                         |
 | text_blocks               |      [object](#Object-text_blocks)      |         |    -     | Configuration for displaying text above and below the windrose. It's possible to show interesting values about the dat measurements used by the card.                                                                  |
@@ -606,6 +607,28 @@ You can also make a helper number entity to rotate the windrose on manual input.
 | attribute   | string  |         |          | If used, not the state but the attributtes value is deplayed. |
 | as_heading  | boolean |  false  |          | Use compass degrees as heading instead of north direction.    |
 
+
+### Object sun_position
+
+Shows a small marker on the rim of the rose at the sun's current azimuth,
+rotating along with the rose when `compass_direction.auto_rotate` or
+`rose_config.windrose_draw_north_offset` are set, the same way the current
+wind direction arrow does. Only drawn when this object is present in the
+config.
+
+| Name       |  Type   |    Default     | Required | Description                                                                          |
+|------------|:-------:|:--------------:|:--------:|---------------------------------------------------------------------------------------|
+| show_arrow | boolean |      true       |    -     | Show the marker, false to turn off without removing the rest of this config.          |
+| entity     | string  |    sun.sun      |    -     | Entity providing the azimuth. The built-in `sun.sun` entity works with no other config.|
+| attribute  | string  |    azimuth      |    -     | Attribute holding the azimuth in degrees (0-359). `sun.sun` exposes this by default.  |
+| arrow_size | number  |       20        |    -     | Marker diameter in pixels.                                                            |
+| color      |  string | --primary-text-color |    -     | Marker color.                                                                   |
+
+### Example sun_position yaml
+```yaml
+sun_position:
+  color: orange
+```
 
 ### Object corner_info
 

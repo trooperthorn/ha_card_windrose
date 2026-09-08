@@ -9,6 +9,7 @@ import { WindRoseRendererCenterCalm } from "./WindRoseRendererCenterCalm";
 import { PercentageCalculatorCenterCalm } from "./PercentageCalculatorCenterCalm";
 import { WindRoseRenderer } from "./WindRoseRenderer";
 import { CurrentDirectionRenderer } from "./CurrentDirectionRenderer";
+import { SunPositionRenderer } from "./SunPositionRenderer";
 import { DegreesCalculator } from "./DegreesCalculator";
 import { Log2 } from "../util/Log2";
 import { EntityStatesProcessor } from "../entity-state-processing/EntityStatesProcessor";
@@ -58,6 +59,7 @@ export class WindRoseDirigent {
     private windRoseRenderer!: WindRoseRenderer;
     private windBarRenderers: WindBarRenderer[] = [];
     private currentDirectionRenderer!: CurrentDirectionRenderer;
+    private sunPositionRenderer!: SunPositionRenderer;
     private currentSpeedRenderers: CurrentSpeedRenderer[] = [];
     private infoCornersRendeerer!: InfoCornersRenderer;
     private touchFacesRenderer!: TouchFacesRenderer;
@@ -135,6 +137,9 @@ export class WindRoseDirigent {
 
         if (this.cardConfig.currentDirection.showArrow) {
             this.currentDirectionRenderer = new CurrentDirectionRenderer(cardConfig, this.dimensionCalculator, this.svg);
+        }
+        if (this.cardConfig.sunPosition.show) {
+            this.sunPositionRenderer = new SunPositionRenderer(cardConfig, this.dimensionCalculator, this.svg);
         }
         if (this.cardConfig.cornersInfo.isCornerInfoSet()) {
             this.infoCornersRendeerer = new InfoCornersRenderer(cardConfig.cornersInfo, this.dimensionCalculator, this.svg);
@@ -235,12 +240,14 @@ export class WindRoseDirigent {
                 currentSpeedRenderer.drawCurrentSpeed(this.entityStatesProcessor.getWindSpeed(barIndex));
             }
             this.currentDirectionRenderer?.drawCurrentWindDirection(this.degreesCalculator.getWindDirectionRenderDegrees());
+            this.sunPositionRenderer?.drawSunPosition(this.degreesCalculator.getSunRenderDegrees());
             this.infoCornersRendeerer?.drawCornerValues(this.entityStatesProcessor.getCornerInfoStates());
 
             if (this.cardConfig.roseConfig.backgroundImage !== undefined && this.backgroundElement === undefined) {
                 this.backgroundElement = this.windRoseRenderer.drawBackgroundImage();
             }
             this.currentDirectionRenderer?.moveToFront();
+            this.sunPositionRenderer?.moveToFront();
             this.windRoseRenderer.rotateWindRose();
             this.touchFacesRenderer.moveToFront();
             this.windBarRenderers.forEach(windBarrenderer => windBarrenderer.moveEventSegmentsToFront());
@@ -266,7 +273,12 @@ export class WindRoseDirigent {
         if (this.entityStatesProcessor.hasCompassDirectionUpdate()) {
             this.degreesCalculator.setCompassDegrees(this.entityStatesProcessor.getCompassDirection());
             this.currentDirectionRenderer?.drawCurrentWindDirection(this.degreesCalculator.getWindDirectionRenderDegrees());
+            this.sunPositionRenderer?.drawSunPosition(this.degreesCalculator.getSunRenderDegrees());
             this.windRoseRenderer.rotateWindRose();
+        }
+        if (this.entityStatesProcessor.hasSunPositionUpdate()) {
+            this.degreesCalculator.setSunDegrees(this.entityStatesProcessor.getSunPosition());
+            this.sunPositionRenderer?.drawSunPosition(this.degreesCalculator.getSunRenderDegrees());
         }
         if (this.entityStatesProcessor.hasCornerInfoUpdates()) {
             this.infoCornersRendeerer.drawCornerValues(this.entityStatesProcessor.getCornerInfoStates());

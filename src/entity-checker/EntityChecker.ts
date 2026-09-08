@@ -25,6 +25,10 @@ export class EntityChecker {
             this.checkEntity(cardConfig.compassConfig.entity, cardConfig.compassConfig.attribute, false, hass);
         }
 
+        if (cardConfig.sunPosition && cardConfig.sunPosition.show && cardConfig.sunPosition.entity) {
+            this.checkEntity(cardConfig.sunPosition.entity, cardConfig.sunPosition.attribute, false, hass);
+        }
+
         this.checkCornerInfo(cardConfig.cornersInfo.topLeftInfo, hass);
         this.checkCornerInfo(cardConfig.cornersInfo.topRightInfo, hass);
         this.checkCornerInfo(cardConfig.cornersInfo.bottomLeftInfo, hass);
