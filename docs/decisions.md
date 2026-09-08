@@ -89,3 +89,36 @@ also accept a bare date, which the README already documents as valid) closes
 the gap without narrowing what already worked.
 
 No new config surface was added; this is a validation-correctness fix.
+
+## 2026-09-08: #225 (text_block variables only work for the first windspeed_entities) and a pre-existing min-speed bug found while fixing it
+
+[`WindRoseDirigent.refreshData()`](../src/renderer/WindRoseDirigent.ts) called
+`templateParser.addMatchedValues(matchedGroups[activeSpeedEntityIndex])` for
+only the active windspeed entity, so `${max-speed}`, `${min-speed}`,
+`${average-speed}`, `${wind-description}`, and the percentile variables were
+never available for a second or third `windspeed_entities` entry, matching
+Sean's real dashboard config in `weather_station.yaml`, which has two
+(`Station Windspeed` and `Average Gust Speed`).
+
+Fixed by calling `addMatchedValues` for every entity, each under an index
+suffix (`-0`, `-1`, ...), in addition to the existing unsuffixed call for the
+active entity (unchanged, so `${max-speed}` keeps meaning "the active
+entity" exactly as before). A text_block can now reference
+`${max-speed-1}` for the second windspeed entity's gust maximum, for example.
+
+Also added `min-speed-time`/`min-speed-direction` and
+`max-speed-time`/`max-speed-direction` (each entity-suffixed too), covering
+the second half of #225: pairing the min/max with when and from which
+direction it occurred. This required
+[`MatchedMeasurements`](../src/matcher/MatchedMeasurements.ts) to actually
+track which measurement produced the min/max, which it did not do before.
+
+While adding that tracking, found `minSpeed` was effectively always `0`:
+it started at `0` and only updated on `speed < this.minSpeed`, which a
+positive wind speed never satisfies on the first measurement, so `${min-speed}`
+has always evaluated to `0` for any real (non-negative) speed sensor. Fixed
+by seeding `minSpeed`/`maxSpeed` (and the new time/direction fields) from
+the first measurement instead of a literal `0`. This changes `${min-speed}`'s
+value for existing configs that use it (from always-0 to the actual
+minimum); flagged here explicitly since it is a behavior change, not just an
+additive one.

@@ -169,6 +169,9 @@ export class WindRoseDirigent {
             const matchedGroups = this.measurementMatcher.match(measurementHolder);
             this.templateParser.addMatchedValues(matchedGroups[activeSpeedEntityIndex]);
             for (let i = 0; i < matchedGroups.length; i++) {
+                // Also under an index suffix, so a text_block can reference any
+                // windspeed_entities item, not only the active one (issue #225).
+                this.templateParser.addMatchedValues(matchedGroups[i], '-' + i);
                 this.measurementCounters[i].init(this.cardConfig.windspeedEntities[i].speedUnit, matchedGroups[i].getAverageSpeed());
                 for (const measurement of matchedGroups[i].getMeasurements()) {
                     this.measurementCounters[i].addWindMeasurements(measurement.direction, measurement.speed, measurement.seconds);

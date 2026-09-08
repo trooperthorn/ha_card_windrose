@@ -8,16 +8,25 @@ export class MatchedMeasurements {
     public minSpeed: number = 0;
     public maxSpeed: number = 0;
 
+    public minSpeedTime: number | undefined;
+    public minSpeedDirection: number | string | undefined;
+    public maxSpeedTime: number | undefined;
+    public maxSpeedDirection: number | string | undefined;
+
     public firstDateTime: number = Date.now() / 1000;
     public lastDateTime: number = 0;
 
     add(direction: number | string, speed: number, time: number, seconds: number = 1) {
         this.directionSpeeds.push(new DirectionSpeed(direction, speed, seconds));
-        if (speed < this.minSpeed) {
+        if (speed < this.minSpeed || this.minSpeedTime === undefined) {
             this.minSpeed = speed;
+            this.minSpeedTime = time;
+            this.minSpeedDirection = direction;
         }
-        if (speed > this.maxSpeed) {
+        if (speed > this.maxSpeed || this.maxSpeedTime === undefined) {
             this.maxSpeed = speed;
+            this.maxSpeedTime = time;
+            this.maxSpeedDirection = direction;
         }
         if (time < this.firstDateTime) {
             this.firstDateTime = time;

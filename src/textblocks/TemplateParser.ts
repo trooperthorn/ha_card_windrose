@@ -54,22 +54,33 @@ export class TemplateParser {
         });
     }
 
-    public addMatchedValues(matchedMeasurements: MatchedMeasurements): void {
-        this.addOrUpdateValue('match-count', matchedMeasurements.getMeasurementCount());
-        this.addOrUpdateValue('min-speed', Math.round(matchedMeasurements.minSpeed));
-        this.addOrUpdateValue('max-speed', Math.round(matchedMeasurements.maxSpeed));
-        this.addOrUpdateValue('average-speed', Math.round(matchedMeasurements.getAverageSpeed()));
+    // suffix distinguishes a specific windspeed_entities index (e.g. "-1" for
+    // the second entity) from the unsuffixed variables, which always reflect
+    // the currently active windspeed entity, same as before this suffix existed.
+    public addMatchedValues(matchedMeasurements: MatchedMeasurements, suffix: string = ''): void {
+        this.addOrUpdateValue('match-count' + suffix, matchedMeasurements.getMeasurementCount());
+        this.addOrUpdateValue('min-speed' + suffix, Math.round(matchedMeasurements.minSpeed));
+        this.addOrUpdateValue('max-speed' + suffix, Math.round(matchedMeasurements.maxSpeed));
+        this.addOrUpdateValue('average-speed' + suffix, Math.round(matchedMeasurements.getAverageSpeed()));
+        if (matchedMeasurements.minSpeedTime !== undefined) {
+            this.addOrUpdateValue('min-speed-time' + suffix, this.dateTimeFormatter.formatTimestampTime(matchedMeasurements.minSpeedTime));
+            this.addOrUpdateValue('min-speed-direction' + suffix, matchedMeasurements.minSpeedDirection + '');
+        }
+        if (matchedMeasurements.maxSpeedTime !== undefined) {
+            this.addOrUpdateValue('max-speed-time' + suffix, this.dateTimeFormatter.formatTimestampTime(matchedMeasurements.maxSpeedTime));
+            this.addOrUpdateValue('max-speed-direction' + suffix, matchedMeasurements.maxSpeedDirection + '');
+        }
         if (matchedMeasurements.getMeasurementCount() > 0) {
-            this.addOrUpdateValue('time-first-match', this.dateTimeFormatter.formatTimestampTime(matchedMeasurements.firstDateTime));
-            this.addOrUpdateValue('time-last-match', this.dateTimeFormatter.formatTimestampTime(matchedMeasurements.lastDateTime));
-            this.addOrUpdateValue('date-first-match', this.dateTimeFormatter.formatTimestampDate(matchedMeasurements.firstDateTime,));
-            this.addOrUpdateValue('date-last-match', this.dateTimeFormatter.formatTimestampDate(matchedMeasurements.lastDateTime));
+            this.addOrUpdateValue('time-first-match' + suffix, this.dateTimeFormatter.formatTimestampTime(matchedMeasurements.firstDateTime));
+            this.addOrUpdateValue('time-last-match' + suffix, this.dateTimeFormatter.formatTimestampTime(matchedMeasurements.lastDateTime));
+            this.addOrUpdateValue('date-first-match' + suffix, this.dateTimeFormatter.formatTimestampDate(matchedMeasurements.firstDateTime,));
+            this.addOrUpdateValue('date-last-match' + suffix, this.dateTimeFormatter.formatTimestampDate(matchedMeasurements.lastDateTime));
             const minutes = Math.round((matchedMeasurements.lastDateTime - matchedMeasurements.firstDateTime) / 60)
-            this.addOrUpdateValue('match-period-hours', Math.round(minutes / 60));
-            this.addOrUpdateValue('match-period-minutes', minutes);
+            this.addOrUpdateValue('match-period-hours' + suffix, Math.round(minutes / 60));
+            this.addOrUpdateValue('match-period-minutes' + suffix, minutes);
         } else {
-            this.addOrUpdateValue('match-period-hours', 0);
-            this.addOrUpdateValue('match-period-minutes', 0);
+            this.addOrUpdateValue('match-period-hours' + suffix, 0);
+            this.addOrUpdateValue('match-period-minutes' + suffix, 0);
         }
         
         // Statistical wind measures for better weather reporting
@@ -80,26 +91,26 @@ export class TemplateParser {
         const median = count % 2 === 0 
             ? (speeds[count/2 - 1] + speeds[count/2]) / 2 
             : speeds[Math.floor(count/2)];
-        this.addOrUpdateValue('median-speed', Math.round(median));
-        
+        this.addOrUpdateValue('median-speed' + suffix, Math.round(median));
+
         // Interquartile range (25th to 75th percentile) - excludes outliers
         const q1Index = Math.floor(count * 0.25);
         const q3Index = Math.floor(count * 0.75);
         const q1 = speeds[q1Index];
         const q3 = speeds[q3Index];
-        this.addOrUpdateValue('q1-speed', Math.round(q1));
-        this.addOrUpdateValue('q3-speed', Math.round(q3));
-        this.addOrUpdateValue('iqr-range', `${Math.round(q1)}-${Math.round(q3)}`);
-        
+        this.addOrUpdateValue('q1-speed' + suffix, Math.round(q1));
+        this.addOrUpdateValue('q3-speed' + suffix, Math.round(q3));
+        this.addOrUpdateValue('iqr-range' + suffix, `${Math.round(q1)}-${Math.round(q3)}`);
+
         // 90th percentile for gusts (excludes the highest 10% outliers)
         const p90Index = Math.floor(count * 0.90);
         const p90 = speeds[p90Index];
-        this.addOrUpdateValue('p90-speed', Math.round(p90));
-        
+        this.addOrUpdateValue('p90-speed' + suffix, Math.round(p90));
+
         // Weather-style description using IQR
         const maxSpeed = Math.round(matchedMeasurements.maxSpeed);
         const gustText = maxSpeed > q3 * 1.3 ? ` gusts to ${maxSpeed}` : '';
-        this.addOrUpdateValue('wind-description', `${Math.round(q1)}-${Math.round(q3)}${gustText}`);
+        this.addOrUpdateValue('wind-description' + suffix, `${Math.round(q1)}-${Math.round(q3)}${gustText}`);
     }
 
     public addEntityStates(entityStates: EntityState[]) {
