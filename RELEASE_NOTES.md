@@ -1,3 +1,24 @@
+### v2.8.0
+
+Fork release (trooperthorn/ha_card_windrose), based on upstream v2.7.0.
+
+Feature:
+- corner_info entries: `unknown_value` and `hide_when_unknown` to control display when the source entity's state is unknown/unavailable. Fixes #207
+- corner_info entries: `value_colors`, colors the value by numeric range, same shape as `speed_ranges`. Fixes #165
+- corner_info entries: when `label` is left out, the value now renders at the label's position instead of leaving an empty gap. Fixes #211
+- `card_height` and `content_align` options to give the card a fixed height and align its content within it. Fixes #201
+- text_blocks template variables (`max-speed`, `min-speed`, `average-speed`, percentiles, `wind-description`) now available per `windspeed_entities` index (`max-speed-1`, etc.), not only for the active entity. Fixes #225
+- New template variables `min-speed-time`, `min-speed-direction`, `max-speed-time`, `max-speed-direction`, also per entity index.
+- `average_period_back` on a windspeed entity with `dynamic_speed_ranges`: use an independent time window to compute the average that selects the speed range, instead of the rose's own display period. Fixes #108
+
+Fix:
+- `data_period.from_date`/`to_date` validation now rejects malformed ISO 8601 strings explicitly instead of relying on `new Date()`, whose parsing of non-conformant strings is implementation-defined and inconsistent across browsers. Fixes #226
+- `min-speed` (and the new min-speed-* variables) was effectively always 0: it started at a literal 0 and only updated when a speed went negative, which no real (non-negative) speed sensor ever does.
+
+See `docs/backlog.md` and `docs/decisions.md` in this fork for the full
+triage of upstream's open issues, including what was investigated but not
+built and why.
+
 ### 2.7.0
 
 Fix, feature change statistics type config:
