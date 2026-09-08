@@ -122,3 +122,28 @@ the first measurement instead of a literal `0`. This changes `${min-speed}`'s
 value for existing configs that use it (from always-0 to the actual
 minimum); flagged here explicitly since it is a behavior change, not just an
 additive one.
+
+## 2026-09-08: #108 (independent averaging window) implemented, #127 (templated period_back) documented instead
+
+`average_period_back` on a `windspeed_entities` item adds a second,
+independent HA fetch (`HAMeasurementProvider.getAveragingSpeed`) for that
+entity's own average over its own window, run in parallel with the normal
+display-period fetch in `WindRoseDirigent.refreshData()`. It computes a
+plain average of the entity's raw values; direction matching is not needed
+just to pick a `dynamic_speed_ranges` bucket. When unset (every existing
+config), `dynamicRangeAverages[i]` is `undefined` and the code falls back to
+`matchedGroups[i].getAverageSpeed()`, exactly the prior behavior.
+
+#127 (drive `period_back` from an entity like an `input_number`) was not
+given the same treatment. `Period.calculateTimeRange()` runs synchronously
+and has no access to `hass`; the two places in this codebase that do read
+live entity values (`corner_info`, `text_blocks`) go through
+`EntityStatesProcessor`, which is populated during `entityStateProcessor.init()`
+and updated on every `hass` set. Wiring `period_back` the same way means
+extending that processor's entity discovery and `EntityChecker`'s
+validation, not just adding a config field, a materially larger change than
+anything else in this phase. `config-template-card` (thomasloven's card,
+already in wide HACS use) achieves the same result today with zero native
+code, by templating the whole card config with Jinja before windrose-card
+ever sees it. Given a proven, general workaround already exists, native
+support was left undone rather than half-built.

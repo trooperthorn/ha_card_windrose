@@ -4,6 +4,7 @@ import { GlobalConfig } from "./GlobalConfig";
 import { CardConfigSpeedRange } from "../card/CardConfigSpeedRange";
 import { ConfigCheckUtils } from "./ConfigCheckUtils";
 import { DynamicSpeedRange } from "./DynamicSpeedRange";
+import { PeriodCodeHelper } from "../util/PeriodCodeHelper";
 
 export class WindSpeedEntity {
 
@@ -32,7 +33,8 @@ export class WindSpeedEntity {
         public readonly barPercentageTextSize: number,
         public readonly compensationFactor: number,
         public readonly compensationAbsolute: number,
-        public useForWindRose: boolean) {}
+        public useForWindRose: boolean,
+        public readonly averagePeriodBack: string | undefined = undefined) {}
 
     static fromConfig(entityConfig: CardConfigWindSpeedEntity,
                       windspeedBarLocation: string): WindSpeedEntity {
@@ -67,12 +69,24 @@ export class WindSpeedEntity {
         const dynamicSpeedRanges = this.checkDynamicSpeedRanges(entityConfig.dynamic_speed_ranges);
         this.checkSpeedRangeCombi(speedRanges, speedRangeStep, speedRangeMax, dynamicSpeedRanges, speedRangeBeaufort);
         this.checkAttribuutStatsCombi(useStatistics, entityConfig.attribute);
+        const averagePeriodBack = this.checkAveragePeriodBack(entityConfig.average_period_back, dynamicSpeedRanges);
 
         return new WindSpeedEntity(entity, entityConfig.attribute, name, useStatistics, statsPeriod, statsType, barRenderScale,
             windspeedBarFull, inputSpeedUnit, outputSpeedUnit,  outputSpeedUnitLabel, speedRangeBeaufort,
             speedRangeStep, speedRangeMax, speedRanges, dynamicSpeedRanges, currentSpeedArrow, currentSpeedArrowSize,
             currentSpeedArrowLocation, barLabelTextSize, barSpeedTextSize, barPercentageTextSize, compensationFactor,
-            compensationAbsolute, useForWindRose);
+            compensationAbsolute, useForWindRose, averagePeriodBack);
+    }
+
+    private static checkAveragePeriodBack(averagePeriodBack: string | undefined, dynamicSpeedRanges: DynamicSpeedRange[]): string | undefined {
+        if (!averagePeriodBack) {
+            return undefined;
+        }
+        if (dynamicSpeedRanges.length === 0) {
+            throw new Error("WindRoseCard: average_period_back only applies together with dynamic_speed_ranges.");
+        }
+        PeriodCodeHelper.checkInPast('average_period_back', averagePeriodBack);
+        return averagePeriodBack;
     }
 
     private static checkInputSpeedUnit(inputSpeedUnit: string): string {

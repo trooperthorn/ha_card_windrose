@@ -164,7 +164,11 @@ export class WindRoseDirigent {
         this.templateParser.addPeriodData(this.cardConfig.activePeriod);
         this.windRoseData = [];
 
-        return this.measurementProvider.getMeasurements().then((measurementHolder: MeasurementHolder) => {
+        const averagingSpeeds = this.cardConfig.windspeedEntities.map(
+            entity => this.measurementProvider.getAveragingSpeed(entity));
+
+        return Promise.all([this.measurementProvider.getMeasurements(), Promise.all(averagingSpeeds)])
+            .then(([measurementHolder, dynamicRangeAverages]: [MeasurementHolder, (number | undefined)[]]) => {
 
             const matchedGroups = this.measurementMatcher.match(measurementHolder);
             this.templateParser.addMatchedValues(matchedGroups[activeSpeedEntityIndex]);
@@ -172,7 +176,11 @@ export class WindRoseDirigent {
                 // Also under an index suffix, so a text_block can reference any
                 // windspeed_entities item, not only the active one (issue #225).
                 this.templateParser.addMatchedValues(matchedGroups[i], '-' + i);
-                this.measurementCounters[i].init(this.cardConfig.windspeedEntities[i].speedUnit, matchedGroups[i].getAverageSpeed());
+                // average_period_back (#108) overrides the average used to pick a
+                // dynamic_speed_ranges bucket; the rose itself still displays the
+                // regular, matched measurements for the display period.
+                const dynamicRangeAverage = dynamicRangeAverages[i] ?? matchedGroups[i].getAverageSpeed();
+                this.measurementCounters[i].init(this.cardConfig.windspeedEntities[i].speedUnit, dynamicRangeAverage);
                 for (const measurement of matchedGroups[i].getMeasurements()) {
                     this.measurementCounters[i].addWindMeasurements(measurement.direction, measurement.speed, measurement.seconds);
                 }

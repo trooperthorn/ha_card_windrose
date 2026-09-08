@@ -6,6 +6,8 @@ import { Log } from "../util/Log";
 import { WindDirectionEntity } from "../config/WindDirectionEntity";
 import { HARequestData } from "./HARequestData";
 import { DateTimeFormatter } from "../formatter/DateTimeFormatter";
+import { WindSpeedEntity } from "../config/WindSpeedEntity";
+import { PeriodCodeHelper } from "../util/PeriodCodeHelper";
 
 export class HAMeasurementProvider {
 
@@ -70,6 +72,30 @@ export class HAMeasurementProvider {
                 measurementHolder.setErrorState(error, this.cardConfig.windspeedEntities.length);
             }
             return Promise.resolve(measurementHolder);
+        });
+    }
+
+    // Fetches a plain average of one windspeed entity's own values over its own
+    // average_period_back window, independent of the rose's display period
+    // (issue #108). Direction matching is not needed for an average.
+    getAveragingSpeed(windspeedEntity: WindSpeedEntity): Promise<number | undefined> {
+        if (!windspeedEntity.averagePeriodBack) {
+            return Promise.resolve(undefined);
+        }
+        const now = new Date();
+        const startTime = PeriodCodeHelper.move(windspeedEntity.averagePeriodBack, new Date(now));
+        const requestData = HARequestData.fromWindSpeedEntity(windspeedEntity, this.cardConfig.activePeriod);
+
+        return this.haWebservice.getMeasurementData(startTime, now, requestData).then(result => {
+            const data = result[windspeedEntity.entity];
+            const measurements = requestData.useStatistics
+                ? HAMeasurementProvider.parseStatsMeasurements(data, windspeedEntity.entity, true)
+                : HAMeasurementProvider.parseHistoryMeasurements(data, windspeedEntity.entity, windspeedEntity.attribute, true);
+            if (measurements.length === 0) {
+                return undefined;
+            }
+            const total = measurements.reduce((sum, m) => sum + (+m.value), 0);
+            return total / measurements.length;
         });
     }
 
