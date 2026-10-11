@@ -59,6 +59,7 @@ export class WindRoseCard extends LitElement {
     refreshCardConfigOnHass = false;
     cardConfig!: CardConfigWrapper;
     updateInterval: NodeJS.Timeout | undefined;
+    lastRefresh: number | undefined;
     _hass!: HomeAssistant;
     svg: Svg;
     warningMessage: string = '';
@@ -328,13 +329,22 @@ export class WindRoseCard extends LitElement {
         super.connectedCallback();
         this.log.method('connectedCallBack');
         this.initInterval();
-
+        // The dashboard detaches cards on a view change and reattaches them
+        // when the view comes back; data older than one refresh interval is
+        // reloaded right away instead of waiting for the next tick.
+        if (this.lastRefresh !== undefined
+            && Date.now() - this.lastRefresh >= this.cardConfig.refreshInterval * 1000) {
+            this.cardConfig.activePeriod.recalculateTimeRange();
+            this.refreshMeasurements(false);
+        }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.log.method('disconnectedCallback');
         clearInterval(this.updateInterval);
+        // initInterval() only starts a timer when this is undefined.
+        this.updateInterval = undefined;
     }
 
     getCardSize(): number {
@@ -351,6 +361,7 @@ export class WindRoseCard extends LitElement {
 
     refreshMeasurements(animate: boolean): void {
         this.log.method('refreshMeasurements');
+        this.lastRefresh = Date.now();
         this.errorMessage = '';
         this.windRoseDirigent.refreshData().then((measurementHolder: MeasurementHolder) => {
             this.log.debug('refreshData() ready, requesting update.');
