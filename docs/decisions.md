@@ -219,3 +219,31 @@ rose renderer variants (`WindRoseRendererStandaard` and
 way `windDirectionTextGroup`'s children get counter-rotated in
 `rotateWindRose()`, for a single requester the maintainer already pointed at
 an existing answer. Not built; documented instead.
+
+## 2026-10-10: update flags are cleared once per render pass, not per getter
+
+A performance review of Sean's dashboards found the card redrawing on state
+changes that had nothing to do with it. `EntityStatesProcessor` marks a state
+`updated` when its value changes, and `WindRoseCard.hass` calls
+`updateStateRender()` whenever any state is marked. The getters for the wind
+direction, the first wind speed, the compass, and the sun reset their own
+flag, but `getCornerInfoStates()`, `getTextBlockStates()`, and
+`getWindSpeed(i, false)` for every speed bar after the first did not, and a
+direction whose state does not convert (for example `unknown`) kept its flag
+too. Once one of those states changed, `hasUpdates()` stayed true, so every
+later hass update in the whole installation redrew the corner texts,
+rewrote the text blocks, and restarted the speed arrow animation.
+
+Resetting the flag inside each of those getters was considered and not
+chosen: it would make the render order in `updateStateRender()` load-bearing
+(the speed loop reads index 0 without resetting it so the direction block
+below can still see it), and any getter added later could reintroduce the
+bug. `updateStateRender()` now calls `clearUpdates()` once after it has drawn
+everything, which ties the flags to the render pass instead of to the
+getters. `EntityStatesProcessor.test.ts` covers it.
+
+The same review found that `disconnectedCallback()` cleared the refresh
+interval but left the handle set, so `initInterval()` refused to start a new
+one when the dashboard reattached the card after a view change, and the card
+stopped refreshing. The handle is now reset, and a reattached card whose data
+is older than one `refresh_interval` reloads immediately.

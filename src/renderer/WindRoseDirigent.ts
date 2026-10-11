@@ -288,6 +288,7 @@ export class WindRoseDirigent {
             this.htmlRenderer.renderTextBlocks();
         }
         this.backgroundElement?.back();
+        this.entityStatesProcessor.clearUpdates();
     }
 
     setTextBlocks(textBlockTop: HTMLDivElement, textBlockBottom: HTMLDivElement): void {

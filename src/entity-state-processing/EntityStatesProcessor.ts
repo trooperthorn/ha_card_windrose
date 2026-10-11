@@ -95,6 +95,16 @@ export class EntityStatesProcessor {
         return this.entityStates.some(state => state.updated);
     }
 
+    // Marks every state as rendered. The per-entity getters only reset the
+    // flags they read, so corner info, text block, and secondary speed states
+    // (and a direction whose state does not convert) would otherwise stay
+    // updated and make hasUpdates() true on every unrelated hass change.
+    clearUpdates(): void {
+        this.entityStates.forEach((state: EntityState) => {
+            state.updated = false;
+        });
+    }
+
     hasWindDirectionUpdate(): boolean {
         return this.windDirectionState.updated;
     }
