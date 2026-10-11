@@ -1,3 +1,11 @@
+### v2.9.1
+
+Fork release (trooperthorn/ha_card_windrose).
+
+Fixes:
+- The card no longer redraws on every state change in Home Assistant. Corner info, text block, and secondary wind speed states kept their "updated" flag after being drawn, so once one of them changed, every later state change anywhere in the installation redrew the corner texts, rewrote the text blocks, and restarted the speed arrow animation. See `docs/decisions.md`.
+- The card keeps refreshing after the dashboard detaches and reattaches it (for example on a view change). Previously the refresh interval was never restarted, so the rose stopped updating until the page was reloaded. A reattached card whose data is older than `refresh_interval` now reloads immediately.
+
 ### v2.9.0
 
 Fork release (trooperthorn/ha_card_windrose).
